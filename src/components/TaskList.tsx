@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid';
 
 import '../styles/tasklist.scss'
@@ -15,9 +15,9 @@ export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
-  function handleCreateNewTask(event: FormEvent) {
-    event.preventDefault();
+  const inputRef = useRef<HTMLInputElement>(null);
 
+  function handleCreateNewTask() {
     if (newTaskTitle.trim() === '') {
       return;
     }
@@ -29,6 +29,10 @@ export function TaskList() {
     }
 
     setTasks(allTasks => [...allTasks, task]);
+
+    setNewTaskTitle('');
+
+    inputRef.current?.focus();
   }
 
   function handleToggleTaskCompletion(id: string) {
@@ -48,7 +52,6 @@ export function TaskList() {
       }
     })
     
-
     setTasks(formattedTasks)
   }
 
@@ -62,17 +65,16 @@ export function TaskList() {
         <h2>Minhas tasks</h2>
 
         <div className="input-group">
-          <form onSubmit={handleCreateNewTask}>
-            <input 
-              type="text" 
-              placeholder="Adicionar novo todo" 
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              value={newTaskTitle}
-            />
-            <button type="submit" data-testid="add-task-button">
-              <FiCheckSquare size={16} color="#fff"/>
-            </button>
-          </form>
+          <input
+            ref={inputRef}
+            type="text" 
+            placeholder="Adicionar novo todo" 
+            onChange={(e) => setNewTaskTitle(e.target.value)}
+            value={newTaskTitle}
+          />
+          <button type="submit" data-testid="add-task-button" onClick={handleCreateNewTask}>
+            <FiCheckSquare size={16} color="#fff"/>
+          </button>
         </div>
       </header>
 
