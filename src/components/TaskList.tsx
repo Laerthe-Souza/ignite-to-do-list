@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
+import { v4 as uuid } from 'uuid';
 
 import '../styles/tasklist.scss'
 
 import { FiTrash, FiCheckSquare } from 'react-icons/fi'
 
 interface Task {
-  id: number;
+  id: string;
   title: string;
   isComplete: boolean;
 }
@@ -14,16 +15,45 @@ export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
-  function handleCreateNewTask() {
-    // Crie uma nova task com um id random, não permita criar caso o título seja vazio.
+  function handleCreateNewTask(event: FormEvent) {
+    event.preventDefault();
+
+    if (newTaskTitle.trim() === '') {
+      return;
+    }
+
+    const task = {
+      id: uuid(),
+      title: newTaskTitle,
+      isComplete: false,
+    }
+
+    setTasks(allTasks => [...allTasks, task]);
   }
 
-  function handleToggleTaskCompletion(id: number) {
-    // Altere entre `true` ou `false` o campo `isComplete` de uma task com dado ID
+  function handleToggleTaskCompletion(id: string) {
+    const formattedTasks = tasks.map(task => {
+      if (task.id === id) {
+        return {
+          id: task.id,
+          title: task.title,
+          isComplete: !task.isComplete,
+        }
+      }
+
+      return {
+        id: task.id,
+        title: task.title,
+        isComplete: task.isComplete,
+      }
+    })
+    
+
+    setTasks(formattedTasks)
   }
 
-  function handleRemoveTask(id: number) {
-    // Remova uma task da listagem pelo ID
+  function handleRemoveTask(id: string) {
+    setTasks(allTasks => allTasks.filter(task => task.id !== id));
   }
 
   return (
@@ -32,15 +62,17 @@ export function TaskList() {
         <h2>Minhas tasks</h2>
 
         <div className="input-group">
-          <input 
-            type="text" 
-            placeholder="Adicionar novo todo" 
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            value={newTaskTitle}
-          />
-          <button type="submit" data-testid="add-task-button" onClick={handleCreateNewTask}>
-            <FiCheckSquare size={16} color="#fff"/>
-          </button>
+          <form onSubmit={handleCreateNewTask}>
+            <input 
+              type="text" 
+              placeholder="Adicionar novo todo" 
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              value={newTaskTitle}
+            />
+            <button type="submit" data-testid="add-task-button">
+              <FiCheckSquare size={16} color="#fff"/>
+            </button>
+          </form>
         </div>
       </header>
 
